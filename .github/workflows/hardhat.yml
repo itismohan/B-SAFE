@@ -109,8 +109,26 @@ jobs:
         env:
           BUILT_IN_FORGE_API_URL: ${{ secrets.BUILT_IN_FORGE_API_URL }}
           VITE_APP_LOGO: ${{ vars.VITE_APP_LOGO }}
-        run: node -e 'const url = process.env.BUILT_IN_FORGE_API_URL; if (!url) throw new Error("Missing BUILT_IN_FORGE_API_URL"); new URL(url); if (process.env.VITE_APP_LOGO !== "/manus-storage/bsafe-logo_3057dd9c.png") throw new Error("VITE_APP_LOGO must be /manus-storage/bsafe-logo_3057dd9c.png");'
-
+        run: |
+          node - <<'NODE'
+          const rawUrl = process.env.BUILT_IN_FORGE_API_URL?.trim();
+          if (!rawUrl || rawUrl === "***") {
+            throw new Error("BUILT_IN_FORGE_API_URL is missing. Add the complete Forge base URL as a repository secret, including https://.");
+          }
+          let parsedUrl;
+          try {
+            parsedUrl = new URL(rawUrl);
+          } catch {
+            throw new Error("BUILT_IN_FORGE_API_URL is malformed. It must be an absolute URL such as https://api.example.com, not a placeholder or path-only value.");
+          }
+          if (!["http:", "https:"].includes(parsedUrl.protocol) || !parsedUrl.hostname) {
+            throw new Error("BUILT_IN_FORGE_API_URL must use http:// or https:// and include a hostname.");
+          }
+          if (process.env.VITE_APP_LOGO !== "/manus-storage/bsafe-logo_3057dd9c.png") {
+            throw new Error("VITE_APP_LOGO must be the repository variable /manus-storage/bsafe-logo_3057dd9c.png.");
+          }
+          console.log("Forge URL and logo configuration are valid.");
+          NODE
       - name: Install Playwright browsers
         run: pnpm exec playwright install --with-deps chromium
 
@@ -247,8 +265,20 @@ jobs:
       - name: Validate Forge environment
         env:
           BUILT_IN_FORGE_API_URL: ${{ secrets.BUILT_IN_FORGE_API_URL }}
-        run: node -e 'const url = process.env.BUILT_IN_FORGE_API_URL; if (!url) throw new Error("Missing BUILT_IN_FORGE_API_URL"); new URL(url);'
-
+        run: |
+          node - <<'NODE'
+          const rawUrl = process.env.BUILT_IN_FORGE_API_URL?.trim();
+          if (!rawUrl || rawUrl === "***") {
+            throw new Error("BUILT_IN_FORGE_API_URL is missing. Add the complete Forge base URL as a repository secret, including https://.");
+          }
+          try {
+            const parsedUrl = new URL(rawUrl);
+            if (!["http:", "https:"].includes(parsedUrl.protocol) || !parsedUrl.hostname) throw new Error();
+          } catch {
+            throw new Error("BUILT_IN_FORGE_API_URL is malformed. It must be an absolute URL such as https://api.example.com, not a placeholder or path-only value.");
+          }
+          console.log("Forge URL configuration is valid.");
+          NODE
       - name: Apply Drizzle migrations
         run: pnpm drizzle-kit migrate
 
