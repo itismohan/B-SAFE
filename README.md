@@ -1,10 +1,6 @@
-[![CI](https://github.com/itismohan/B-SAFE/actions/workflows/hardhat.yml/badge.svg)](https://github.com/itismohan/B-SAFE/actions/workflows/hardhat.yml)
-[![Release](https://img.shields.io/github/v/release/itismohan/B-SAFE?label=release)](https://github.com/itismohan/B-SAFE/releases)
-[![Stars](https://img.shields.io/github/stars/itismohan/B-SAFE?style=social)](https://github.com/itismohan/B-SAFE/stargazers)
-
 ![B-SAFE Logo](assets/bsafe-logo.png)
 
-[![CI](https://github.com/itismohan/B-SAFE/actions/workflows/hardhat.yml/badge.svg)](https://github.com/itismohan/B-SAFE/actions/workflows/hardhat.yml) [![Release](https://img.shields.io/github/v/release/itismohan/B-SAFE?label=release)](https://github.com/itismohan/B-SAFE/releases) [![CodeQL](https://github.com/itismohan/B-SAFE/actions/workflows/hardhat.yml/badge.svg?label=CodeQL)](https://github.com/itismohan/B-SAFE/security/code-scanning)
+[![CI](https://github.com/itismohan/B-SAFE/actions/workflows/hardhat.yml/badge.svg)](https://github.com/itismohan/B-SAFE/actions/workflows/hardhat.yml) [![Release](https://img.shields.io/github/v/release/itismohan/B-SAFE?label=release)](https://github.com/itismohan/B-SAFE/releases) [![CodeQL](https://github.com/itismohan/B-SAFE/actions/workflows/hardhat.yml/badge.svg?label=CodeQL)](https://github.com/itismohan/B-SAFE/security/code-scanning) [![Stars](https://img.shields.io/github/stars/itismohan/B-SAFE?style=social)](https://github.com/itismohan/B-SAFE/stargazers)
 
 # B-SAFE Blockchain Security Testing Framework
 
@@ -206,33 +202,33 @@ pnpm evidence:ingest
 
 ## Package script reference
 
-| Command | Purpose |
-|---|---|
-| `pnpm dev` | Start the local dashboard and backend development server |
-| `pnpm check` | Run the TypeScript compiler with `--noEmit` |
-| `pnpm test` | Run the default Vitest unit and service suite |
-| `pnpm test:coverage` | Run Vitest with V8 coverage and enforced thresholds |
-| `pnpm test:browser` | Run all Playwright browser and accessibility tests |
-| `pnpm evm:node` | Start the local Hardhat JSON-RPC node on `127.0.0.1:8545` |
-| `pnpm test:evm` | Run live EVM integration tests when Hardhat is already running |
-| `pnpm test:evm:ci` | Run the no-skip live Hardhat integration gate |
-| `pnpm evidence:generate` | Generate HTML, JSON, JUnit, and SARIF evidence |
-| `pnpm evidence:ingest` | Ingest and publish evidence metadata and findings |
-| `pnpm db:push` | Generate and apply Drizzle migrations; use only for intentional schema changes |
-| `pnpm build` | Build the client and bundled server output |
-| `pnpm start` | Start the production build after `pnpm build` |
+| Command                  | Purpose                                                                        |
+| ------------------------ | ------------------------------------------------------------------------------ |
+| `pnpm dev`               | Start the local dashboard and backend development server                       |
+| `pnpm check`             | Run the TypeScript compiler with `--noEmit`                                    |
+| `pnpm test`              | Run the default Vitest unit and service suite                                  |
+| `pnpm test:coverage`     | Run Vitest with V8 coverage and enforced thresholds                            |
+| `pnpm test:browser`      | Run all Playwright browser and accessibility tests                             |
+| `pnpm evm:node`          | Start the local Hardhat JSON-RPC node on `127.0.0.1:8545`                      |
+| `pnpm test:evm`          | Run live EVM integration tests when Hardhat is already running                 |
+| `pnpm test:evm:ci`       | Run the no-skip live Hardhat integration gate                                  |
+| `pnpm evidence:generate` | Generate HTML, JSON, JUnit, and SARIF evidence                                 |
+| `pnpm evidence:ingest`   | Ingest and publish evidence metadata and findings                              |
+| `pnpm db:push`           | Generate and apply Drizzle migrations; use only for intentional schema changes |
+| `pnpm build`             | Build the client and bundled server output                                     |
+| `pnpm start`             | Start the production build after `pnpm build`                                  |
 
 ## Troubleshooting
 
-| Symptom | Likely cause | Resolution |
-|---|---|---|
-| `pnpm: command not found` | pnpm is not installed or is not on `PATH` | Install pnpm and reopen the terminal |
-| Dashboard starts but data calls fail | Missing or unreachable `DATABASE_URL` | Configure a valid MySQL/TiDB URL and restart `pnpm dev` |
-| Port 3000 is already in use | Another dashboard or Node process is running | Stop the existing process before starting B-SAFE again |
-| Playwright reports a missing browser | Browser binaries are not installed | Run `pnpm exec playwright install` |
-| Live EVM tests are skipped | Hardhat is not running or integration mode is disabled | Prefer `pnpm test:evm:ci` |
-| Hardhat integration cannot connect | The local node is not listening on `127.0.0.1:8545` | Start `pnpm evm:node` and retry |
-| `src refspec main does not match any` | The local `main` branch has no commit | Run `git add .`, `git commit`, and then push |
+| Symptom                                    | Likely cause                                              | Resolution                                                                       |
+| ------------------------------------------ | --------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| `pnpm: command not found`                  | pnpm is not installed or is not on `PATH`                 | Install pnpm and reopen the terminal                                             |
+| Dashboard starts but data calls fail       | Missing or unreachable `DATABASE_URL`                     | Configure a valid MySQL/TiDB URL and restart `pnpm dev`                          |
+| Port 3000 is already in use                | Another dashboard or Node process is running              | Stop the existing process before starting B-SAFE again                           |
+| Playwright reports a missing browser       | Browser binaries are not installed                        | Run `pnpm exec playwright install`                                               |
+| Live EVM tests are skipped                 | Hardhat is not running or integration mode is disabled    | Prefer `pnpm test:evm:ci`                                                        |
+| Hardhat integration cannot connect         | The local node is not listening on `127.0.0.1:8545`       | Start `pnpm evm:node` and retry                                                  |
+| `src refspec main does not match any`      | The local `main` branch has no commit                     | Run `git add .`, `git commit`, and then push                                     |
 | `Unable to transform response from server` | The dashboard backend or database response is unavailable | Inspect development-server logs and verify authentication/database configuration |
 
 ## Commit and push the source

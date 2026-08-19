@@ -253,3 +253,8 @@
 - [x] Add a disposable MySQL service and apply Drizzle migrations before database tests
 - [x] Split unit, database, browser, and live Hardhat workflow jobs with appropriate environment mappings
 - [x] Validate the complete CI-oriented test set and push the pipeline changes
+
+# README Badge Consolidation
+
+- [x] Consolidate CI, release, CodeQL, and stars badges into one block below the B-SAFE logo
+- [x] Validate and push the README badge correction
