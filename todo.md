@@ -275,3 +275,10 @@
 - [x] Make Critical Run execution assertions robust to callback timing
 - [x] Add deterministic browser-safe report-history fixture data
 - [x] Rerun the full browser suite and push only passing changes
+
+# Optional Forge Integration Checks
+
+- [x] Remove mandatory Forge/logo validation from general CI jobs
+- [x] Make Forge-backed evidence publication conditional with an explicit skipped status
+- [x] Preserve deterministic storage and branding tests plus core CI gates
+- [x] Validate and push the optional Forge-check workflow change

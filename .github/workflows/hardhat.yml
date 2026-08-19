@@ -85,10 +85,6 @@ jobs:
     name: Browser control-plane tests
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    env:
-      VITE_APP_LOGO: ${{ vars.VITE_APP_LOGO }}
-      BUILT_IN_FORGE_API_URL: ${{ secrets.BUILT_IN_FORGE_API_URL }}
-      BUILT_IN_FORGE_API_KEY: ${{ secrets.BUILT_IN_FORGE_API_KEY }}
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -105,30 +101,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Validate browser environment
-        env:
-          BUILT_IN_FORGE_API_URL: ${{ secrets.BUILT_IN_FORGE_API_URL }}
-          VITE_APP_LOGO: ${{ vars.VITE_APP_LOGO }}
-        run: |
-          node - <<'NODE'
-          const rawUrl = process.env.BUILT_IN_FORGE_API_URL?.trim();
-          if (!rawUrl || rawUrl === "***") {
-            throw new Error("BUILT_IN_FORGE_API_URL is missing. Add the complete Forge base URL as a repository secret, including https://.");
-          }
-          let parsedUrl;
-          try {
-            parsedUrl = new URL(rawUrl);
-          } catch {
-            throw new Error("BUILT_IN_FORGE_API_URL is malformed. It must be an absolute URL such as https://api.example.com, not a placeholder or path-only value.");
-          }
-          if (!["http:", "https:"].includes(parsedUrl.protocol) || !parsedUrl.hostname) {
-            throw new Error("BUILT_IN_FORGE_API_URL must use http:// or https:// and include a hostname.");
-          }
-          if (process.env.VITE_APP_LOGO !== "/manus-storage/bsafe-logo_3057dd9c.png") {
-            throw new Error("VITE_APP_LOGO must be the repository variable /manus-storage/bsafe-logo_3057dd9c.png.");
-          }
-          console.log("Forge URL and logo configuration are valid.");
-          NODE
       - name: Install Playwright browsers
         run: pnpm exec playwright install --with-deps chromium
 
@@ -262,25 +234,30 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Validate Forge environment
+      - name: Detect optional Forge integration
+        id: forge
         env:
           BUILT_IN_FORGE_API_URL: ${{ secrets.BUILT_IN_FORGE_API_URL }}
+          BUILT_IN_FORGE_API_KEY: ${{ secrets.BUILT_IN_FORGE_API_KEY }}
         run: |
-          node - <<'NODE'
-          const rawUrl = process.env.BUILT_IN_FORGE_API_URL?.trim();
-          if (!rawUrl || rawUrl === "***") {
-            throw new Error("BUILT_IN_FORGE_API_URL is missing. Add the complete Forge base URL as a repository secret, including https://.");
-          }
-          try {
-            const parsedUrl = new URL(rawUrl);
-            if (!["http:", "https:"].includes(parsedUrl.protocol) || !parsedUrl.hostname) throw new Error();
-          } catch {
-            throw new Error("BUILT_IN_FORGE_API_URL is malformed. It must be an absolute URL such as https://api.example.com, not a placeholder or path-only value.");
-          }
-          console.log("Forge URL configuration is valid.");
-          NODE
+          if [ -n "${BUILT_IN_FORGE_API_URL:-}" ] && [ "${BUILT_IN_FORGE_API_URL}" != "***" ] && [ -n "${BUILT_IN_FORGE_API_KEY:-}" ] && [ "${BUILT_IN_FORGE_API_KEY}" != "***" ]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+            echo "Forge integration is configured; scheduled publication will run."
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "Forge integration is not configured; scheduled publication will be skipped."
+          fi
+
       - name: Apply Drizzle migrations
         run: pnpm drizzle-kit migrate
 
-      - name: Generate and ingest nightly evidence
-        run: pnpm evidence:generate && pnpm evidence:ingest
+      - name: Generate nightly evidence
+        run: pnpm evidence:generate
+
+      - name: Ingest nightly evidence through Forge
+        if: steps.forge.outputs.configured == 'true'
+        run: pnpm evidence:ingest
+
+      - name: Report skipped Forge publication
+        if: steps.forge.outputs.configured != 'true'
+        run: echo "::notice::Forge URL/key secrets are not configured; deterministic CI and database checks passed, but external evidence publication was skipped."
