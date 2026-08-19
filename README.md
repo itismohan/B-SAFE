@@ -1,20 +1,24 @@
+<div align="center">
+
 ![B-SAFE Logo](assets/bsafe-logo.png)
 
-[![CI](https://github.com/itismohan/B-SAFE/actions/workflows/hardhat.yml/badge.svg)](https://github.com/itismohan/B-SAFE/actions/workflows/hardhat.yml) [![Release](https://img.shields.io/github/v/release/itismohan/B-SAFE?label=release)](https://github.com/itismohan/B-SAFE/releases) [![CodeQL](https://github.com/itismohan/B-SAFE/actions/workflows/hardhat.yml/badge.svg?label=CodeQL)](https://github.com/itismohan/B-SAFE/security/code-scanning) [![Stars](https://img.shields.io/github/stars/itismohan/B-SAFE?style=social)](https://github.com/itismohan/B-SAFE/stargazers)
+</div>
+
+[![CI](https://github.com/itismohan/B-SAFE/actions/workflows/hardhat.yml/badge.svg)](https://github.com/itismohan/B-SAFE/actions/workflows/hardhat.yml) [![Release](https://img.shields.io/github/v/release/itismohan/B-SAFE?style=flat)](https://github.com/itismohan/B-SAFE/releases) [![License](https://img.shields.io/github/license/itismohan/B-SAFE?style=flat)](LICENSE)
 
 # B-SAFE Blockchain Security Testing Framework
 
-B-SAFE is a security-first, blockchain-agnostic testing framework with a React control-plane dashboard, a TypeScript automation engine, controlled Hardhat/EVM fixtures, independent reconciliation, SARIF/JUnit evidence, and CI integration.
+B-SAFE is a security-first, blockchain-agnostic testing framework with a React control-plane dashboard, a TypeScript automation engine, controlled Hardhat/EVM fixtures, independent reconciliation, and a comprehensive evidence and reporting system designed to validate asset-lifecycle security and smart-contract behavior.
 
-The framework provides an independent assurance layer for digital-asset infrastructure. It exercises smart-contract and asset lifecycles, validates authorization and state transitions, compares on-chain events against independent ledger expectations, and publishes reproducible evidence for engineering and security teams.
+The framework provides an independent assurance layer for digital-asset infrastructure. It exercises smart-contract and asset lifecycles, validates authorization and state transitions, compares on-chain and off-chain records, and issues security findings with forensic evidence.
 
 ## What is included
 
-The repository contains the CAD-blueprint dashboard under `client/`, backend control-plane procedures under `server/`, blockchain adapters and domain models under `automation/src/`, Solidity fixtures under `contracts/` and `automation/fixtures/`, browser tests under `browser-tests/`, and GitHub Actions workflows under `.github/workflows/`.
+The repository contains the CAD-blueprint dashboard under `client/`, backend control-plane procedures under `server/`, blockchain adapters and domain models under `automation/src/`, Solidity fixtures under `contracts/`, and browser-based UI and accessibility tests under `browser-tests/`.
 
-The dashboard includes the Command Center, Test Runs, Test Engine, Findings, Reconciliation, and Evidence & Reports views. Test Runs supports persisted history, run details, execution progress, cancellation, retry, and resumable execution. The automation engine supports controlled EVM execution, ERC-20/ERC-721/ERC-1155 lifecycle testing, upgradeable-proxy governance checks, event decoding, independent reconciliation, and evidence serialization.
+The dashboard includes the Command Center, Test Runs, Test Engine, Findings, Reconciliation, and Evidence & Reports views. Test Runs supports persisted history, run details, execution progress, cancellation, and integration with blockchain networks.
 
-Read [TESTING.md](./TESTING.md) for the complete guide to service and tRPC tests, HTTP transport coverage, UI/browser tests, Hardhat contract integration tests, provider mocking, report evidence, GitHub Actions, troubleshooting, and adding new test cases.
+Read [TESTING.md](./TESTING.md) for the complete guide to service and tRPC tests, HTTP transport coverage, UI/browser tests, Hardhat contract integration tests, provider mocking, report evidence, ingestion, and troubleshooting.
 
 ## Prerequisites
 
@@ -37,11 +41,11 @@ cd /Users/mohankrishnagundala/Documents/BSAFE
 pnpm install
 ```
 
-If you cloned the repository somewhere else, use that directory instead. The project uses TypeScript, React, Vitest, Playwright, Hardhat, viem, Express, tRPC, Drizzle ORM, and MySQL/TiDB-compatible persistence.
+If you cloned the repository somewhere else, use that directory instead. The project uses TypeScript, React, Vitest, Playwright, Hardhat, viem, Express, tRPC, Drizzle ORM, and MySQL/TiDB-compatible drivers to provide end-to-end security automation, verification, and reporting.
 
 ## Configure environment variables
 
-The full-stack dashboard expects a reachable database through `DATABASE_URL`. The managed B-SAFE environment injects authentication, OAuth, storage, and application variables automatically. A standalone local deployment must provide equivalent values where required by the selected features.
+The full-stack dashboard expects a reachable database through `DATABASE_URL`. The managed B-SAFE environment injects authentication, OAuth, storage, and application variables automatically. A standalone or self-hosted deployment may require explicit configuration.
 
 If the repository includes an environment template, copy it without committing secrets:
 
@@ -49,7 +53,7 @@ If the repository includes an environment template, copy it without committing s
 cp .env.example .env
 ```
 
-Then configure at least a valid local or hosted MySQL/TiDB-compatible `DATABASE_URL`. Do not commit `.env`, `.env.local`, or any credential file. If the dashboard starts but database-backed features fail, verify that `DATABASE_URL` is present and that the database accepts connections from the local machine.
+Then configure at least a valid local or hosted MySQL/TiDB-compatible `DATABASE_URL`. Do not commit `.env`, `.env.local`, or any credential file. If the dashboard starts but database-backed features do not work, verify that the `DATABASE_URL` is valid, reachable, and provisioned with the latest schema.
 
 ## Start the B-SAFE dashboard
 
@@ -65,7 +69,7 @@ Open the dashboard at:
 http://localhost:3000
 ```
 
-The dashboard provides the CAD-blueprint control plane, New Run flow, execution results, Test Runs history, Findings, Reconciliation, Evidence & Reports, and the real-time execution stream. Stop the server with `Ctrl+C`.
+The dashboard provides the CAD-blueprint control plane, New Run flow, execution results, Test Runs history, Findings, Reconciliation, Evidence & Reports, and the real-time execution stream. Stop the development server with `Ctrl+C`.
 
 ## Run the automation unit and service suites
 
@@ -103,7 +107,7 @@ Then run the browser suite:
 pnpm test:browser
 ```
 
-Browser coverage includes primary navigation, branding, the New Run launch flow, execution results, report-history filtering, pagination, artifact downloads, run-history controls, modal accessibility, and responsive behavior.
+Browser coverage includes primary navigation, branding, the New Run launch flow, execution results, report-history filtering, pagination, artifact downloads, run-history controls, modal accessibility, and interactive UI validation.
 
 To run a focused browser test:
 
@@ -132,7 +136,7 @@ For the preferred CI-equivalent no-skip validation, use:
 pnpm test:evm:ci
 ```
 
-The no-skip runner enables live EVM integration automatically and fails unless all five expected scenarios execute successfully with zero skipped scenarios. The live scenarios cover controlled EVM behavior, ERC-20/ERC-721 lifecycles, ERC-1155 and upgradeable-proxy flowsThe no-skip runreconciliation, and proxy-governance findings.
+The no-skip runner enables live EVM integration automatically and fails unless all five expected scenarios execute successfully with zero skipped scenarios. The live scenarios cover controlled EVM execution, lifecycle transitions, permission validation, and contract upgrade behavior.
 
 If you run live Vitest files manually, set the integration flag explicitly:
 
@@ -154,11 +158,11 @@ Exercise the evidence ingestion and publication path:
 pnpm evidence:ingest
 ```
 
-Evidence metadata can include the source, format, run ID, retention or expiration timestamps, artifact references, findings, and SARIF source locations. Review generated artifacts before committing.
+Evidence metadata can include the source, format, run ID, retention or expiration timestamps, artifact references, findings, and SARIF source locations. Review generated artifacts before committing to ensure sensitive content is excluded.
 
 ## Database schema changes
 
-The project uses Drizzle ORM. Schema changes must be intentional and reviewed. Update `drizzle/schema.ts`, generate the migration, inspect the SQL, and apply it through the project’s database workflow:
+The project uses Drizzle ORM. Schema changes must be intentional and reviewed. Update `drizzle/schema.ts`, generate the migration, inspect the SQL, and apply it through the project's database workflow:
 
 ```bash
 pnpm drizzle-kit generate
@@ -242,7 +246,7 @@ git commit -m "Update B-SAFE framework"
 git push --set-upstream origin main
 ```
 
-If the repository has no commits yet, the first push will fail until `git add` and `git commit` are completed. Review `git status` before committing so that generated artifacts, local environment files, and machine-specific outputs are not accidentally published.
+If the repository has no commits yet, the first push will fail until `git add` and `git commit` are completed. Review `git status` before committing so that generated artifacts, local environment, and credential files are excluded.
 
 ## Further documentation
 
