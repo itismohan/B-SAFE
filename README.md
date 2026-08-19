@@ -4,6 +4,8 @@
 
 ![B-SAFE Logo](assets/bsafe-logo.png)
 
+[![CI](https://github.com/itismohan/B-SAFE/actions/workflows/hardhat.yml/badge.svg)](https://github.com/itismohan/B-SAFE/actions/workflows/hardhat.yml) [![Release](https://img.shields.io/github/v/release/itismohan/B-SAFE?label=release)](https://github.com/itismohan/B-SAFE/releases) [![CodeQL](https://github.com/itismohan/B-SAFE/actions/workflows/hardhat.yml/badge.svg?label=CodeQL)](https://github.com/itismohan/B-SAFE/security/code-scanning)
+
 # B-SAFE Blockchain Security Testing Framework
 
 B-SAFE is a security-first, blockchain-agnostic testing framework with a React control-plane dashboard, a TypeScript automation engine, controlled Hardhat/EVM fixtures, independent reconciliation, SARIF/JUnit evidence, and CI integration.

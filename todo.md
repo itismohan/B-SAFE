@@ -223,3 +223,10 @@
 
 - [x] Update README.md with local dashboard, automation runner, Hardhat, testing, evidence, troubleshooting, and Git instructions
 - [x] Validate the updated README and repository diff
+
+# Deployment Health and Workflow Badge Fixes
+
+- [x] Update SARIF upload to CodeQL Action v4 and avoid failing fork pull requests without code-scanning write access
+- [x] Add appropriate CI and release status badges below the B-SAFE logo in README.md
+- [x] Resize the repository logo asset for efficient README rendering
+- [x] Run local health and workflow validation, then push the fixes
