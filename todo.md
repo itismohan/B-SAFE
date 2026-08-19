@@ -258,3 +258,20 @@
 
 - [x] Consolidate CI, release, CodeQL, and stars badges into one block below the B-SAFE logo
 - [x] Validate and push the README badge correction
+
+# Browser Panel Verification Follow-up
+
+- [ ] Inspect browser-panel test configuration and run the browser suite locally before further workflow changes
+- [ ] Report browser results and identify any required code changes
+
+# Browser Runner Portability Follow-up
+
+- [x] Remove the hardcoded Linux Chromium executable path from Playwright configuration
+- [x] Verify Playwright Chromium locally and rerun all browser-panel tests
+- [x] Push the browser configuration fix only after validation passes
+
+# Browser Test Reliability Fixes
+
+- [x] Make Critical Run execution assertions robust to callback timing
+- [x] Add deterministic browser-safe report-history fixture data
+- [x] Rerun the full browser suite and push only passing changes
