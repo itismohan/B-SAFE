@@ -218,3 +218,8 @@
 - [x] Preserve accessible modal interactions and existing run-launch behavior
 - [x] Validate the enhanced launch flow visually and functionally
 - [x] Save a checkpoint for the UI enhancement
+
+# Local Setup Documentation
+
+- [x] Update README.md with local dashboard, automation runner, Hardhat, testing, evidence, troubleshooting, and Git instructions
+- [x] Validate the updated README and repository diff
