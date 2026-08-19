@@ -230,3 +230,8 @@
 - [x] Add appropriate CI and release status badges below the B-SAFE logo in README.md
 - [x] Resize the repository logo asset for efficient README rendering
 - [x] Run local health and workflow validation, then push the fixes
+
+# GitHub Actions pnpm Bootstrap Fix
+
+- [x] Initialize pnpm before setup-node attempts pnpm caching
+- [x] Validate the corrected workflow and push it to main
