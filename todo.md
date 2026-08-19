@@ -235,3 +235,8 @@
 
 - [x] Initialize pnpm before setup-node attempts pnpm caching
 - [x] Validate the corrected workflow and push it to main
+
+# GitHub Actions pnpm Version Conflict Fix
+
+- [x] Use package.json packageManager as the single pnpm version authority
+- [x] Validate the corrected workflow and push it to main
