@@ -1,0 +1,111 @@
+name: B-SAFE Hardhat integration
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "17 2 * * *"
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  hardhat-integration:
+    runs-on: ubuntu-latest
+    env:
+      BSAFE_DATABASE_URL: ${{ secrets.BSAFE_DATABASE_URL }}
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Enable pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.4.1
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Compile Solidity fixtures
+        run: pnpm exec hardhat compile
+
+      - name: Start Hardhat JSON-RPC network
+        run: pnpm evm:node > hardhat.log 2>&1 &
+
+      - name: Wait for JSON-RPC health
+        run: |
+          for attempt in {1..30}; do
+            if curl --silent --fail -X POST http://127.0.0.1:8545 \
+              -H 'content-type: application/json' \
+              --data '{"jsonrpc":"2.0","method":"eth_chainId","params":[],"id":1}' | grep -q '0x7a69'; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat hardhat.log
+          exit 1
+
+      - name: Run unit tests
+        run: pnpm check && pnpm test
+
+      - name: Enforce coverage thresholds
+        run: pnpm test:coverage
+
+      - name: Start B-SAFE portal for browser tests
+        run: pnpm dev > portal.log 2>&1 &
+
+      - name: Wait for portal health
+        run: |
+          for attempt in {1..30}; do
+            if curl --silent --fail http://127.0.0.1:3000/ > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat portal.log
+          exit 1
+
+      - name: Run browser interaction tests
+        run: pnpm test:browser
+
+      - name: Run live Hardhat integration scenarios
+        run: pnpm test:evm:ci
+
+      - name: Generate retained evidence reports
+        run: pnpm evidence:generate
+
+      - name: Publish SARIF annotations to GitHub code scanning
+        if: always() && hashFiles('reports/bsafe.sarif') != ''
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: reports/bsafe.sarif
+          category: bsafe-hardhat
+
+      - name: Publish nightly findings to B-SAFE dashboard
+        if: github.event_name == 'schedule' && env.BSAFE_DATABASE_URL != ''
+        env:
+          DATABASE_URL: ${{ secrets.BSAFE_DATABASE_URL }}
+        run: pnpm evidence:ingest
+
+      - name: Upload Hardhat and test evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bsafe-hardhat-evidence
+          path: |
+            hardhat.log
+            artifacts/
+            reports/
+            coverage/
+            portal.log
+          if-no-files-found: warn
+          retention-days: 30

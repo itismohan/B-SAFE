@@ -1,0 +1,46 @@
+{
+  "_format": "hh3-sol-build-info-1",
+  "id": "solc-0_8_24-bda6c53c451dd8c4fc751d09d81095c64cc807f0",
+  "solcVersion": "0.8.24",
+  "solcLongVersion": "0.8.24+commit.e11b9ed9",
+  "compilerType": "solc",
+  "userSourceNameMap": {
+    "contracts/fixtures/TestERC20.sol": "project/contracts/fixtures/TestERC20.sol",
+    "contracts/fixtures/TestERC721.sol": "project/contracts/fixtures/TestERC721.sol"
+  },
+  "input": {
+    "language": "Solidity",
+    "settings": {
+      "evmVersion": "shanghai",
+      "outputSelection": {
+        "*": {
+          "": [
+            "ast"
+          ],
+          "*": [
+            "abi",
+            "evm.bytecode.linkReferences",
+            "evm.bytecode.object",
+            "evm.bytecode.opcodes",
+            "evm.bytecode.sourceMap",
+            "evm.deployedBytecode.immutableReferences",
+            "evm.deployedBytecode.linkReferences",
+            "evm.deployedBytecode.object",
+            "evm.deployedBytecode.opcodes",
+            "evm.deployedBytecode.sourceMap",
+            "evm.methodIdentifiers"
+          ]
+        }
+      },
+      "remappings": []
+    },
+    "sources": {
+      "project/contracts/fixtures/TestERC20.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.24;\n\ncontract TestERC20 {\n    string public name = \"B-SAFE Synthetic Token\";\n    string public symbol = \"BSAFE\";\n    uint8 public decimals = 18;\n    uint256 public totalSupply;\n    mapping(address => uint256) public balanceOf;\n    mapping(address => mapping(address => uint256)) public allowance;\n\n    event Transfer(address indexed from, address indexed to, uint256 value);\n    event Approval(address indexed owner, address indexed spender, uint256 value);\n\n    function mint(address to, uint256 amount) external {\n        totalSupply += amount;\n        balanceOf[to] += amount;\n        emit Transfer(address(0), to, amount);\n    }\n\n    function approve(address spender, uint256 amount) external returns (bool) {\n        allowance[msg.sender][spender] = amount;\n        emit Approval(msg.sender, spender, amount);\n        return true;\n    }\n\n    function transfer(address to, uint256 amount) external returns (bool) {\n        _transfer(msg.sender, to, amount);\n        return true;\n    }\n\n    function transferFrom(address from, address to, uint256 amount) external returns (bool) {\n        require(allowance[from][msg.sender] >= amount, \"allowance\");\n        allowance[from][msg.sender] -= amount;\n        _transfer(from, to, amount);\n        return true;\n    }\n\n    function _transfer(address from, address to, uint256 amount) internal {\n        require(balanceOf[from] >= amount, \"balance\");\n        balanceOf[from] -= amount;\n        balanceOf[to] += amount;\n        emit Transfer(from, to, amount);\n    }\n}\n"
+      },
+      "project/contracts/fixtures/TestERC721.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.24;\n\ncontract TestERC721 {\n    string public name = \"B-SAFE Synthetic NFT\";\n    string public symbol = \"BSNFT\";\n    mapping(uint256 => address) private owners;\n    mapping(address => uint256) public balanceOf;\n    mapping(uint256 => address) public getApproved;\n    mapping(address => mapping(address => bool)) public isApprovedForAll;\n    mapping(uint256 => string) private tokenUris;\n\n    event Transfer(address indexed from, address indexed to, uint256 indexed tokenId);\n    event Approval(address indexed owner, address indexed approved, uint256 indexed tokenId);\n    event ApprovalForAll(address indexed owner, address indexed operator, bool approved);\n\n    function ownerOf(uint256 tokenId) public view returns (address) {\n        address owner = owners[tokenId];\n        require(owner != address(0), \"nonexistent\");\n        return owner;\n    }\n\n    function tokenURI(uint256 tokenId) external view returns (string memory) {\n        require(owners[tokenId] != address(0), \"nonexistent\");\n        return tokenUris[tokenId];\n    }\n\n    function mint(address to, uint256 tokenId, string calldata uri) external {\n        require(owners[tokenId] == address(0), \"already minted\");\n        owners[tokenId] = to;\n        tokenUris[tokenId] = uri;\n        balanceOf[to] += 1;\n        emit Transfer(address(0), to, tokenId);\n    }\n\n    function approve(address approved, uint256 tokenId) external {\n        address owner = ownerOf(tokenId);\n        require(msg.sender == owner || isApprovedForAll[owner][msg.sender], \"not authorized\");\n        getApproved[tokenId] = approved;\n        emit Approval(owner, approved, tokenId);\n    }\n\n    function setApprovalForAll(address operator, bool approved) external {\n        isApprovedForAll[msg.sender][operator] = approved;\n        emit ApprovalForAll(msg.sender, operator, approved);\n    }\n\n    function transferFrom(address from, address to, uint256 tokenId) external {\n        require(ownerOf(tokenId) == from, \"from\");\n        require(msg.sender == from || msg.sender == getApproved[tokenId] || isApprovedForAll[from][msg.sender], \"not authorized\");\n        owners[tokenId] = to;\n        getApproved[tokenId] = address(0);\n        balanceOf[from] -= 1;\n        balanceOf[to] += 1;\n        emit Transfer(from, to, tokenId);\n    }\n}\n"
+      }
+    }
+  }
+}

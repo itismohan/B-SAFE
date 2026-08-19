@@ -1,0 +1,64 @@
+{
+  "runId": "CI-2026-08-18T12-16-57-060Z",
+  "status": "PASSED",
+  "stages": [
+    "DISCOVER",
+    "MODEL",
+    "GENERATE",
+    "EXECUTE",
+    "OBSERVE",
+    "VERIFY",
+    "ATTACK",
+    "RECONCILE",
+    "ANALYZE",
+    "REPORT"
+  ],
+  "findings": [],
+  "evidence": [
+    {
+      "id": "CI-2026-08-18T12-16-57-060Z-isolation",
+      "kind": "LOG",
+      "capturedAt": "2026-08-18T12:16:57.061Z",
+      "payload": {
+        "walletId": "ephemeral-wallet-CI-2026-08-18T12-16-57-060Z",
+        "assetNamespace": "synthetic-CI-2026-08-18T12-16-57-060Z",
+        "chainId": 31337
+      },
+      "redacted": true
+    },
+    {
+      "id": "CI-2026-08-18T12-16-57-060Z-discover",
+      "kind": "LOG",
+      "capturedAt": "2026-08-18T12:16:57.061Z",
+      "payload": {
+        "target": "controlled-hardhat",
+        "suites": [
+          "Blockchain Transaction",
+          "Reconciliation"
+        ]
+      },
+      "redacted": true
+    },
+    {
+      "id": "CI-2026-08-18T12-16-57-060Z-reconcile",
+      "kind": "RECONCILIATION",
+      "capturedAt": "2026-08-18T12:16:57.061Z",
+      "payload": {
+        "logs": [
+          "GENERATE CI-2026-08-18T12-16-57-060Z",
+          "EXECUTE CI-2026-08-18T12-16-57-060Z",
+          "TRANSACTION CHECK controlled-hardhat",
+          "RECONCILIATION CHECK controlled-hardhat",
+          "OBSERVE CI-2026-08-18T12-16-57-060Z",
+          "VERIFY CI-2026-08-18T12-16-57-060Z",
+          "ATTACK CI-2026-08-18T12-16-57-060Z",
+          "TRANSACTION CHECK controlled-hardhat",
+          "RECONCILIATION CHECK controlled-hardhat",
+          "RECONCILE CI-2026-08-18T12-16-57-060Z"
+        ]
+      },
+      "redacted": true
+    }
+  ],
+  "summary": "CI-2026-08-18T12-16-57-060Z: 0 findings, 3 evidence records"
+}

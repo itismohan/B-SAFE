@@ -1,0 +1,46 @@
+{
+  "_format": "hh3-sol-build-info-1",
+  "id": "solc-0_8_24-cbe2ca217ba0d042ebd9ffb224e2f1d1ef24dd01",
+  "solcVersion": "0.8.24",
+  "solcLongVersion": "0.8.24+commit.e11b9ed9",
+  "compilerType": "solc",
+  "userSourceNameMap": {
+    "contracts/fixtures/TestERC1155.sol": "project/contracts/fixtures/TestERC1155.sol",
+    "contracts/fixtures/UpgradeableCounter.sol": "project/contracts/fixtures/UpgradeableCounter.sol"
+  },
+  "input": {
+    "language": "Solidity",
+    "settings": {
+      "evmVersion": "shanghai",
+      "outputSelection": {
+        "*": {
+          "": [
+            "ast"
+          ],
+          "*": [
+            "abi",
+            "evm.bytecode.linkReferences",
+            "evm.bytecode.object",
+            "evm.bytecode.opcodes",
+            "evm.bytecode.sourceMap",
+            "evm.deployedBytecode.immutableReferences",
+            "evm.deployedBytecode.linkReferences",
+            "evm.deployedBytecode.object",
+            "evm.deployedBytecode.opcodes",
+            "evm.deployedBytecode.sourceMap",
+            "evm.methodIdentifiers"
+          ]
+        }
+      },
+      "remappings": []
+    },
+    "sources": {
+      "project/contracts/fixtures/TestERC1155.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.24;\n\ncontract TestERC1155 {\n    mapping(uint256 => mapping(address => uint256)) public balanceOf;\n    string public uri;\n\n    event TransferSingle(address indexed operator, address indexed from, address indexed to, uint256 id, uint256 value);\n    event TransferBatch(address indexed operator, address indexed from, address indexed to, uint256[] ids, uint256[] values);\n\n    constructor(string memory initialUri) { uri = initialUri; }\n\n    function mint(address to, uint256 id, uint256 amount) external {\n        balanceOf[id][to] += amount;\n        emit TransferSingle(msg.sender, address(0), to, id, amount);\n    }\n\n    function mintBatch(address to, uint256[] calldata ids, uint256[] calldata amounts) external {\n        require(ids.length == amounts.length, \"length\");\n        for (uint256 i = 0; i < ids.length; i++) balanceOf[ids[i]][to] += amounts[i];\n        emit TransferBatch(msg.sender, address(0), to, ids, amounts);\n    }\n\n    function safeTransferFrom(address from, address to, uint256 id, uint256 amount, bytes calldata) external {\n        require(msg.sender == from, \"not authorized\");\n        require(balanceOf[id][from] >= amount, \"balance\");\n        balanceOf[id][from] -= amount;\n        balanceOf[id][to] += amount;\n        emit TransferSingle(msg.sender, from, to, id, amount);\n    }\n}\n"
+      },
+      "project/contracts/fixtures/UpgradeableCounter.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.24;\n\ncontract UpgradeableCounterV1 {\n    uint256 public value;\n    address public admin;\n\n    function initialize(address initialAdmin) external {\n        require(admin == address(0), \"initialized\");\n        admin = initialAdmin;\n    }\n\n    function increment() external { value += 1; }\n    function version() external pure virtual returns (uint256) { return 1; }\n}\n\ncontract UpgradeableCounterV2 is UpgradeableCounterV1 {\n    function decrement() external { value -= 1; }\n    function version() external pure override returns (uint256) { return 2; }\n}\n\ncontract SimpleProxy {\n    bytes32 private constant IMPLEMENTATION_SLOT = bytes32(uint256(keccak256(\"eip1967.proxy.implementation\")) - 1);\n    address public admin;\n\n    constructor(address implementation, address initialAdmin, bytes memory initData) {\n        admin = initialAdmin;\n        _setImplementation(implementation);\n        if (initData.length > 0) {\n            (bool ok,) = implementation.delegatecall(initData);\n            require(ok, \"init failed\");\n        }\n    }\n\n    function implementation() public view returns (address implementationAddress) {\n        bytes32 slot = IMPLEMENTATION_SLOT;\n        assembly { implementationAddress := sload(slot) }\n    }\n\n    function upgradeTo(address newImplementation) external {\n        require(msg.sender == admin, \"not admin\");\n        _setImplementation(newImplementation);\n    }\n\n    function _setImplementation(address newImplementation) internal {\n        bytes32 slot = IMPLEMENTATION_SLOT;\n        assembly { sstore(slot, newImplementation) }\n    }\n\n    fallback() external payable {\n        address target = implementation();\n        assembly {\n            calldatacopy(0, 0, calldatasize())\n            let result := delegatecall(gas(), target, 0, calldatasize(), 0, 0)\n            returndatacopy(0, 0, returndatasize())\n            switch result\n            case 0 { revert(0, returndatasize()) }\n            default { return(0, returndatasize()) }\n        }\n    }\n}\n"
+      }
+    }
+  }
+}

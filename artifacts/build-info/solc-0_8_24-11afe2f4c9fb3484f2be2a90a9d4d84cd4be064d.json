@@ -1,0 +1,42 @@
+{
+  "_format": "hh3-sol-build-info-1",
+  "id": "solc-0_8_24-11afe2f4c9fb3484f2be2a90a9d4d84cd4be064d",
+  "solcVersion": "0.8.24",
+  "solcLongVersion": "0.8.24+commit.e11b9ed9",
+  "compilerType": "solc",
+  "userSourceNameMap": {
+    "contracts/fixtures/UpgradeableCounter.sol": "project/contracts/fixtures/UpgradeableCounter.sol"
+  },
+  "input": {
+    "language": "Solidity",
+    "settings": {
+      "evmVersion": "shanghai",
+      "outputSelection": {
+        "*": {
+          "": [
+            "ast"
+          ],
+          "*": [
+            "abi",
+            "evm.bytecode.linkReferences",
+            "evm.bytecode.object",
+            "evm.bytecode.opcodes",
+            "evm.bytecode.sourceMap",
+            "evm.deployedBytecode.immutableReferences",
+            "evm.deployedBytecode.linkReferences",
+            "evm.deployedBytecode.object",
+            "evm.deployedBytecode.opcodes",
+            "evm.deployedBytecode.sourceMap",
+            "evm.methodIdentifiers"
+          ]
+        }
+      },
+      "remappings": []
+    },
+    "sources": {
+      "project/contracts/fixtures/UpgradeableCounter.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.24;\n\ncontract UpgradeableCounterV1 {\n    uint256 public value;\n    address public admin;\n\n    function initialize(address initialAdmin) external {\n        require(admin == address(0), \"initialized\");\n        admin = initialAdmin;\n    }\n\n    function increment() external { value += 1; }\n    function version() external pure virtual returns (uint256) { return 1; }\n}\n\ncontract UpgradeableCounterV2 is UpgradeableCounterV1 {\n    function decrement() external { value -= 1; }\n    function version() external pure override returns (uint256) { return 2; }\n}\n\ncontract SimpleProxy {\n    event Upgraded(address indexed implementation);\n    event ImplementationAllowed(address indexed implementation, bool allowed);\n    mapping(address => bool) public allowedImplementations;\n    bytes32 private constant IMPLEMENTATION_SLOT = bytes32(uint256(keccak256(\"eip1967.proxy.implementation\")) - 1);\n    bytes32 private constant ADMIN_SLOT = bytes32(uint256(keccak256(\"eip1967.proxy.admin\")) - 1);\n\n    constructor(address implementation, address initialAdmin, bytes memory initData) {\n        _setAdmin(initialAdmin);\n        allowedImplementations[implementation] = true;\n        _setImplementation(implementation);\n        if (initData.length > 0) {\n            (bool ok,) = implementation.delegatecall(initData);\n            require(ok, \"init failed\");\n        }\n    }\n\n    function admin() public view returns (address adminAddress) {\n        bytes32 slot = ADMIN_SLOT;\n        assembly { adminAddress := sload(slot) }\n    }\n\n    function implementation() public view returns (address implementationAddress) {\n        bytes32 slot = IMPLEMENTATION_SLOT;\n        assembly { implementationAddress := sload(slot) }\n    }\n\n    function setImplementationAllowed(address implementationAddress, bool allowed) external {\n        require(msg.sender == admin(), \"not admin\");\n        allowedImplementations[implementationAddress] = allowed;\n        emit ImplementationAllowed(implementationAddress, allowed);\n    }\n\n    function upgradeTo(address newImplementation) external {\n        require(msg.sender == admin(), \"not admin\");\n        require(allowedImplementations[newImplementation], \"implementation not allowed\");\n        _setImplementation(newImplementation);\n        emit Upgraded(newImplementation);\n    }\n\n    function _setAdmin(address newAdmin) internal {\n        bytes32 slot = ADMIN_SLOT;\n        assembly { sstore(slot, newAdmin) }\n    }\n\n    function _setImplementation(address newImplementation) internal {\n        bytes32 slot = IMPLEMENTATION_SLOT;\n        assembly { sstore(slot, newImplementation) }\n    }\n\n    fallback() external payable {\n        address target = implementation();\n        assembly {\n            calldatacopy(0, 0, calldatasize())\n            let result := delegatecall(gas(), target, 0, calldatasize(), 0, 0)\n            returndatacopy(0, 0, returndatasize())\n            switch result\n            case 0 { revert(0, returndatasize()) }\n            default { return(0, returndatasize()) }\n        }\n    }\n}\n"
+      }
+    }
+  }
+}
