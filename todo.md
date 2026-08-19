@@ -240,3 +240,8 @@
 
 - [x] Use package.json packageManager as the single pnpm version authority
 - [x] Validate the corrected workflow and push it to main
+
+# GitHub Actions Environment Mappings
+
+- [x] Map Forge URL/key, logo path, and database URL at workflow job scope for tests and evidence generation
+- [x] Validate and push the workflow environment update

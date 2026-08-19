@@ -16,6 +16,10 @@ jobs:
     runs-on: ubuntu-latest
     env:
       BSAFE_DATABASE_URL: ${{ secrets.BSAFE_DATABASE_URL }}
+      DATABASE_URL: ${{ secrets.BSAFE_DATABASE_URL }}
+      BUILT_IN_FORGE_API_URL: ${{ secrets.BUILT_IN_FORGE_API_URL }}
+      BUILT_IN_FORGE_API_KEY: ${{ secrets.BUILT_IN_FORGE_API_KEY }}
+      VITE_APP_LOGO: ${{ vars.VITE_APP_LOGO }}
     timeout-minutes: 10
     steps:
       - name: Checkout
@@ -90,8 +94,6 @@ jobs:
 
       - name: Publish nightly findings to B-SAFE dashboard
         if: github.event_name == 'schedule' && env.BSAFE_DATABASE_URL != ''
-        env:
-          DATABASE_URL: ${{ secrets.BSAFE_DATABASE_URL }}
         run: pnpm evidence:ingest
 
       - name: Upload Hardhat and test evidence
