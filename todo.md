@@ -245,3 +245,11 @@
 
 - [x] Map Forge URL/key, logo path, and database URL at workflow job scope for tests and evidence generation
 - [x] Validate and push the workflow environment update
+
+# CI Reliability Pipeline Restructure
+
+- [x] Make storage and branding unit tests deterministic without production secrets or a running portal
+- [x] Gate database-specific dashboard tests on DATABASE_URL with an explicit database job
+- [x] Add a disposable MySQL service and apply Drizzle migrations before database tests
+- [x] Split unit, database, browser, and live Hardhat workflow jobs with appropriate environment mappings
+- [x] Validate the complete CI-oriented test set and push the pipeline changes

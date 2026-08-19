@@ -1,11 +1,17 @@
+import { readFile } from "node:fs/promises";
+import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
+const managedLogoPath = "/manus-storage/bsafe-logo_3057dd9c.png";
+
 describe("portal branding", () => {
-  it("uses the supplied managed logo path and serves it through the storage endpoint", async () => {
-    const logoPath = process.env.VITE_APP_LOGO;
-    expect(logoPath).toBe("/manus-storage/bsafe-logo_3057dd9c.png");
-    const response = await fetch(`http://127.0.0.1:3000${logoPath}`);
-    expect(response.ok).toBe(true);
-    expect(response.headers.get("content-type")).toMatch(/image\/png/);
+  it("keeps the complete managed logo path in portal metadata without deployment secrets", async () => {
+    const indexHtml = await readFile(
+      resolve(process.cwd(), "client/index.html"),
+      "utf8"
+    );
+
+    expect(indexHtml).toContain(`href="${managedLogoPath}"`);
+    expect(indexHtml).toContain(`content="${managedLogoPath}"`);
   });
 });

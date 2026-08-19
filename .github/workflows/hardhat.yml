@@ -12,14 +12,137 @@ permissions:
   security-events: write
 
 jobs:
-  hardhat-integration:
+  unit-service:
+    name: Unit and service tests
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Enable pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Type check and unit/service tests
+        run: pnpm check && pnpm exec vitest run --exclude 'server/database.integration.test.ts'
+
+      - name: Enforce coverage thresholds
+        run: pnpm exec vitest run --coverage --exclude 'server/database.integration.test.ts'
+
+  database-integration:
+    name: MySQL persistence tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_DATABASE: bsafe_test
+          MYSQL_USER: bsafe
+          MYSQL_PASSWORD: bsafe_test_password
+          MYSQL_ROOT_PASSWORD: root_password
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -ubsafe -pbsafe_test_password"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=20
     env:
-      BSAFE_DATABASE_URL: ${{ secrets.BSAFE_DATABASE_URL }}
-      DATABASE_URL: ${{ secrets.BSAFE_DATABASE_URL }}
+      DATABASE_URL: mysql://bsafe:bsafe_test_password@127.0.0.1:3306/bsafe_test
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Enable pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Apply Drizzle migrations
+        run: pnpm drizzle-kit migrate
+
+      - name: Run database integration tests
+        run: pnpm exec vitest run server/database.integration.test.ts
+
+  browser:
+    name: Browser control-plane tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      VITE_APP_LOGO: ${{ vars.VITE_APP_LOGO }}
       BUILT_IN_FORGE_API_URL: ${{ secrets.BUILT_IN_FORGE_API_URL }}
       BUILT_IN_FORGE_API_KEY: ${{ secrets.BUILT_IN_FORGE_API_KEY }}
-      VITE_APP_LOGO: ${{ vars.VITE_APP_LOGO }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Enable pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Validate browser environment
+        env:
+          BUILT_IN_FORGE_API_URL: ${{ secrets.BUILT_IN_FORGE_API_URL }}
+          VITE_APP_LOGO: ${{ vars.VITE_APP_LOGO }}
+        run: node -e 'const url = process.env.BUILT_IN_FORGE_API_URL; if (!url) throw new Error("Missing BUILT_IN_FORGE_API_URL"); new URL(url); if (process.env.VITE_APP_LOGO !== "/manus-storage/bsafe-logo_3057dd9c.png") throw new Error("VITE_APP_LOGO must be /manus-storage/bsafe-logo_3057dd9c.png");'
+
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Start B-SAFE portal
+        run: pnpm dev > portal.log 2>&1 &
+
+      - name: Wait for portal health
+        run: |
+          for attempt in {1..30}; do
+            if curl --silent --fail http://127.0.0.1:3000/ > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat portal.log
+          exit 1
+
+      - name: Run browser interaction tests
+        run: pnpm test:browser
+
+      - name: Upload browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bsafe-browser-evidence
+          path: portal.log
+          if-no-files-found: warn
+          retention-days: 30
+
+  live-hardhat:
+    name: Live Hardhat integration
+    runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
       - name: Checkout
@@ -56,29 +179,6 @@ jobs:
           cat hardhat.log
           exit 1
 
-      - name: Run unit tests
-        run: pnpm check && pnpm test
-
-      - name: Enforce coverage thresholds
-        run: pnpm test:coverage
-
-      - name: Start B-SAFE portal for browser tests
-        run: pnpm dev > portal.log 2>&1 &
-
-      - name: Wait for portal health
-        run: |
-          for attempt in {1..30}; do
-            if curl --silent --fail http://127.0.0.1:3000/ > /dev/null; then
-              exit 0
-            fi
-            sleep 1
-          done
-          cat portal.log
-          exit 1
-
-      - name: Run browser interaction tests
-        run: pnpm test:browser
-
       - name: Run live Hardhat integration scenarios
         run: pnpm test:evm:ci
 
@@ -92,10 +192,6 @@ jobs:
           sarif_file: reports/bsafe.sarif
           category: bsafe-hardhat
 
-      - name: Publish nightly findings to B-SAFE dashboard
-        if: github.event_name == 'schedule' && env.BSAFE_DATABASE_URL != ''
-        run: pnpm evidence:ingest
-
       - name: Upload Hardhat and test evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -105,7 +201,56 @@ jobs:
             hardhat.log
             artifacts/
             reports/
-            coverage/
-            portal.log
           if-no-files-found: warn
           retention-days: 30
+
+  nightly-ingestion:
+    name: Scheduled dashboard ingestion
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_DATABASE: bsafe_test
+          MYSQL_USER: bsafe
+          MYSQL_PASSWORD: bsafe_test_password
+          MYSQL_ROOT_PASSWORD: root_password
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -ubsafe -pbsafe_test_password"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=20
+    env:
+      DATABASE_URL: mysql://bsafe:bsafe_test_password@127.0.0.1:3306/bsafe_test
+      BUILT_IN_FORGE_API_URL: ${{ secrets.BUILT_IN_FORGE_API_URL }}
+      BUILT_IN_FORGE_API_KEY: ${{ secrets.BUILT_IN_FORGE_API_KEY }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Enable pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Validate Forge environment
+        env:
+          BUILT_IN_FORGE_API_URL: ${{ secrets.BUILT_IN_FORGE_API_URL }}
+        run: node -e 'const url = process.env.BUILT_IN_FORGE_API_URL; if (!url) throw new Error("Missing BUILT_IN_FORGE_API_URL"); new URL(url);'
+
+      - name: Apply Drizzle migrations
+        run: pnpm drizzle-kit migrate
+
+      - name: Generate and ingest nightly evidence
+        run: pnpm evidence:generate && pnpm evidence:ingest
