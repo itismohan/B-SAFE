@@ -6,6 +6,22 @@ describe("report artifact storage", () => {
     vi.unstubAllGlobals();
   });
 
+  it("rejects a malformed Forge endpoint before making a network request", async () => {
+    vi.resetModules();
+    vi.stubEnv("BUILT_IN_FORGE_API_URL", "forge.internal");
+    vi.stubEnv("BUILT_IN_FORGE_API_KEY", "test-forge-key");
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+    const { storageGetSignedUrl } = await import("./storage");
+
+    await expect(
+      storageGetSignedUrl("bsafe-reports/RUN-001/bsafe.sarif")
+    ).rejects.toThrow(
+      "Storage config invalid: BUILT_IN_FORGE_API_URL must be an absolute HTTP(S) URL"
+    );
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
   it("requests a signed S3 GET URL for a retained report key", async () => {
     vi.resetModules();
     vi.stubEnv("BUILT_IN_FORGE_API_URL", "https://forge.test");

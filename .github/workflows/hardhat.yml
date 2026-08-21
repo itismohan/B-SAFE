@@ -240,12 +240,16 @@ jobs:
           BUILT_IN_FORGE_API_URL: ${{ secrets.BUILT_IN_FORGE_API_URL }}
           BUILT_IN_FORGE_API_KEY: ${{ secrets.BUILT_IN_FORGE_API_KEY }}
         run: |
-          if [ -n "${BUILT_IN_FORGE_API_URL:-}" ] && [ "${BUILT_IN_FORGE_API_URL}" != "***" ] && [ -n "${BUILT_IN_FORGE_API_KEY:-}" ] && [ "${BUILT_IN_FORGE_API_KEY}" != "***" ]; then
+          if [ -n "${BUILT_IN_FORGE_API_URL:-}" ] \
+            && [ "${BUILT_IN_FORGE_API_URL}" != "***" ] \
+            && [ -n "${BUILT_IN_FORGE_API_KEY:-}" ] \
+            && [ "${BUILT_IN_FORGE_API_KEY}" != "***" ] \
+            && node -e 'const value = process.env.BUILT_IN_FORGE_API_URL; try { const url = new URL(value); process.exit(url.protocol === "https:" || url.protocol === "http:" ? 0 : 1); } catch { process.exit(1); }'; then
             echo "configured=true" >> "$GITHUB_OUTPUT"
             echo "Forge integration is configured; scheduled publication will run."
           else
             echo "configured=false" >> "$GITHUB_OUTPUT"
-            echo "Forge integration is not configured; scheduled publication will be skipped."
+            echo "::notice::Forge URL/key secrets are missing or the URL is not an absolute HTTP(S) endpoint; scheduled publication will be skipped."
           fi
 
       - name: Apply Drizzle migrations

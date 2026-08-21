@@ -10,11 +10,26 @@ function getForgeConfig() {
 
   if (!forgeUrl || !forgeKey) {
     throw new Error(
-      "Storage config missing: set BUILT_IN_FORGE_API_URL and BUILT_IN_FORGE_API_KEY",
+      "Storage config missing: set BUILT_IN_FORGE_API_URL and BUILT_IN_FORGE_API_KEY"
     );
   }
 
-  return { forgeUrl: forgeUrl.replace(/\/+$/, ""), forgeKey };
+  let baseUrl: URL;
+  try {
+    baseUrl = new URL(forgeUrl);
+  } catch {
+    throw new Error(
+      "Storage config invalid: BUILT_IN_FORGE_API_URL must be an absolute HTTP(S) URL"
+    );
+  }
+
+  if (baseUrl.protocol !== "https:" && baseUrl.protocol !== "http:") {
+    throw new Error(
+      "Storage config invalid: BUILT_IN_FORGE_API_URL must use HTTP or HTTPS"
+    );
+  }
+
+  return { forgeUrl: baseUrl.href.replace(/\/+$/, ""), forgeKey };
 }
 
 function normalizeKey(relKey: string): string {
@@ -31,7 +46,7 @@ function appendHashSuffix(relKey: string): string {
 export async function storagePut(
   relKey: string,
   data: Buffer | Uint8Array | string,
-  contentType = "application/octet-stream",
+  contentType = "application/octet-stream"
 ): Promise<{ key: string; url: string }> {
   const { forgeUrl, forgeKey } = getForgeConfig();
   const key = appendHashSuffix(normalizeKey(relKey));
@@ -71,7 +86,9 @@ export async function storagePut(
   return { key, url: `/manus-storage/${key}` };
 }
 
-export async function storageGet(relKey: string): Promise<{ key: string; url: string }> {
+export async function storageGet(
+  relKey: string
+): Promise<{ key: string; url: string }> {
   const key = normalizeKey(relKey);
   return { key, url: `/manus-storage/${key}` };
 }
