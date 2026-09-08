@@ -1,0 +1,17 @@
+name: Create Release (basic)
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  create_release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create Release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: v${{ github.run_number }}-${{ github.sha }}
+          name: Release ${{ github.run_number }}
+          body: "Automated release. See RELEASES.md for changelog."
