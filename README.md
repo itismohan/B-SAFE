@@ -7,9 +7,11 @@
 
 </div>
 
-[![CI](https://github.com/itismohan/B-SAFE/actions/workflows/hardhat.yml/badge.svg)](https://github.com/itismohan/B-SAFE/actions/workflows/hardhat.yml) [![Release](https://img.shields.io/github/v/release/itismohan/B-SAFE?label=release)](https://github.com/itismohan/B-SAFE/releases) [![License: MIT](https://img.shields.io/github/license/itismohan/B-SAFE)](./LICENSE) [![Coverage](https://codecov.io/gh/itismohan/B-SAFE/branch/main/graph/badge.svg)](https://codecov.io/gh/itismohan/B-SAFE) [![Dependabot](https://img.shields.io/badge/dependabot-enabled-blue.svg)](https://github.com/itismohan/B-SAFE/security/dependabot)
+[![CI](https://github.com/itismohan/B-SAFE/actions/workflows/hardhat.yml/badge.svg)](https://github.com/itismohan/B-SAFE/actions/workflows/hardhat.yml) [![Release](https://img.shields.io/github/v/release/itismohan/B-SAFE?label=release)](https://github.com/itismohan/B-SAFE/releases) [![License: MIT](https://img.shields.io/github/license/itismohan/B-SAFE)](./LICENSE) [![Coverage](https://codecov.io/gh/itismohan/B-SAFE/branch/main/graph/badge.svg)](https://codecov.io/gh/itismohan/B-SAFE) [![Vulnerabilities](https://img.shields.io/github/vulnerabilities/itismohan/B-SAFE?label=vulnerabilities)](https://github.com/itismohan/B-SAFE/security) [![Dependabot](https://img.shields.io/github/dependabot/itismohan/B-SAFE?label=dependabot)](https://github.com/itismohan/B-SAFE/security/dependabot)
 
 # B-SAFE Blockchain Security Testing Framework
+
+Marketplace / registry description: A security-first, blockchain-agnostic testing framework for independent assurance of smart-contracts and digital-asset infrastructure.
 
 Short description: A security-first, blockchain-agnostic testing framework for independent assurance of smart-contract and digital-asset infrastructure.
 
@@ -69,9 +71,23 @@ pnpm start
 - Visit: http://<your-host-or-load-balancer>/: the dashboard (default port when running behind a reverse proxy)
 - Check logs and health endpoints exposed by the server for database connectivity and background workers.
 
-Docker / docker-compose (example)
+## Quick Start — Docker Compose (example)
 
-This minimal docker-compose is an example; adapt for your infra (secrets, networks, volumes, and production image builds):
+This example demonstrates a minimal Docker Compose setup suitable for testing or staging. It uses an `.env` file (do not commit secrets). Replace placeholders with secure values or inject secrets at runtime.
+
+1. Create a `.env` file (example values shown, DO NOT commit):
+
+```ini
+# .env (example values)
+NODE_ENV=production
+PORT=3000
+DATABASE_URL=mysql://bsafe_user:bsafe_pass@db:3306/bsafe
+OAUTH_CLIENT_ID=your-oauth-client-id
+OAUTH_CLIENT_SECRET=your-oauth-client-secret
+STORAGE_BUCKET=my-bsafe-bucket
+```
+
+2. docker-compose.yml (example excerpt — prefer a production image built with a multi-stage Dockerfile):
 
 ```yaml
 version: '3.8'
@@ -79,24 +95,18 @@ services:
   db:
     image: mysql:8.0
     environment:
-      MYSQL_ROOT_PASSWORD: example
-      MYSQL_DATABASE: bsafe
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-example}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-bsafe}
     volumes:
       - db-data:/var/lib/mysql
     networks:
       - bsafe-net
 
   app:
-    image: node:20-alpine
-    working_dir: /app
-    volumes:
-      - ./:/app
-    environment:
-      - NODE_ENV=production
-      - DATABASE_URL=mysql://root:example@db:3306/bsafe
-    command: sh -c "pnpm install --frozen-lockfile && pnpm build && pnpm start"
+    image: itismohan/bsafe:latest # replace with your built image
+    env_file: .env
     ports:
-      - "3000:3000"
+      - "${PORT:-3000}:3000"
     depends_on:
       - db
     networks:
@@ -110,9 +120,17 @@ networks:
 ```
 
 Notes:
-- Use a multi-stage Dockerfile for production images (build then run from a slim Node image).
-- Replace plaintext secrets with a secrets manager or environment injection in orchestration.
-- Ensure your DB uses recommended production settings (innodb settings, backups, connection limits).
+- Do not commit `.env` or files with secrets. Use a secrets manager or environment injection for production.
+- Use a multi-stage Dockerfile to build the app and produce a minimized runtime image.
+- Ensure production DB settings, backups, and secure networking are in place.
+
+## Badges and release notes
+
+Badges included at the top of this README reflect CI status, latest release, license, coverage (Codecov), vulnerability alerts, and Dependabot. For release notes consider linking to GitHub Releases or creating a RELEASES.md with changelog entries.
+
+Release notes quick link:
+
+- Releases: https://github.com/itismohan/B-SAFE/releases
 
 ## Prerequisites
 
