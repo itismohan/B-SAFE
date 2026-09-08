@@ -7,9 +7,11 @@
 
 </div>
 
-[![CI](https://github.com/itismohan/B-SAFE/actions/workflows/hardhat.yml/badge.svg)](https://github.com/itismohan/B-SAFE/actions/workflows/hardhat.yml) [![Release](https://img.shields.io/github/v/release/itismohan/B-SAFE?label=release)](https://github.com/itismohan/B-SAFE/releases) [![License: MIT](https://img.shields.io/github/license/itismohan/B-SAFE)](./LICENSE)
+[![CI](https://github.com/itismohan/B-SAFE/actions/workflows/hardhat.yml/badge.svg)](https://github.com/itismohan/B-SAFE/actions/workflows/hardhat.yml) [![Release](https://img.shields.io/github/v/release/itismohan/B-SAFE?label=release)](https://github.com/itismohan/B-SAFE/releases) [![License: MIT](https://img.shields.io/github/license/itismohan/B-SAFE)](./LICENSE) [![Coverage](https://codecov.io/gh/itismohan/B-SAFE/branch/main/graph/badge.svg)](https://codecov.io/gh/itismohan/B-SAFE) [![Dependabot](https://img.shields.io/badge/dependabot-enabled-blue.svg)](https://github.com/itismohan/B-SAFE/security/dependabot)
 
 # B-SAFE Blockchain Security Testing Framework
+
+Short description: A security-first, blockchain-agnostic testing framework for independent assurance of smart-contract and digital-asset infrastructure.
 
 B-SAFE is a security-first, blockchain-agnostic testing framework that provides a React control-plane dashboard, a TypeScript automation engine, controlled Hardhat/EVM fixtures, and independent reconciliation and evidence tooling. It provides an independent assurance layer for digital-asset infrastructure by exercising smart-contract and asset lifecycles, validating authorization and state transitions, comparing on-chain and off-chain state, and producing reproducible findings and evidence packages.
 
@@ -28,6 +30,89 @@ This repository contains the main components used to run B-SAFE end-to-end and i
 The dashboard includes the Command Center, Test Runs, Test Engine, Findings, Reconciliation, and Evidence & Reports views. Test Runs supports persisted history, run details, execution progress, cancellation, and artifact downloads. The automation engine supports callback-driven orchestration, cancellation, retry, and resumable stage execution.
 
 Read `TESTING.md` for the complete guide to service and tRPC tests, HTTP transport coverage, UI/browser tests, Hardhat contract integration tests, provider mocking, report evidence, and CI configuration.
+
+## Quick Start (production-oriented)
+
+These steps show a minimal production-ready path: environment, build, migrations, and run.
+
+1. Create a copy of the env template and set production values (do not commit secrets):
+
+```bash
+cp .env.example .env
+# Edit .env to configure DATABASE_URL, OAUTH credentials, STORAGE, and any other app variables
+```
+
+2. Build the application (server and client):
+
+```bash
+pnpm install --frozen-lockfile
+pnpm build
+```
+
+3. Apply database migrations (ensure backups exist):
+
+```bash
+pnpm db:push
+# or if you use drizzle migrations:
+pnpm drizzle-kit generate
+# inspect SQL, then apply
+```
+
+4. Start the production server (example):
+
+```bash
+pnpm start
+```
+
+5. Verify the dashboard is reachable and services are healthy:
+
+- Visit: http://<your-host-or-load-balancer>/: the dashboard (default port when running behind a reverse proxy)
+- Check logs and health endpoints exposed by the server for database connectivity and background workers.
+
+Docker / docker-compose (example)
+
+This minimal docker-compose is an example; adapt for your infra (secrets, networks, volumes, and production image builds):
+
+```yaml
+version: '3.8'
+services:
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: example
+      MYSQL_DATABASE: bsafe
+    volumes:
+      - db-data:/var/lib/mysql
+    networks:
+      - bsafe-net
+
+  app:
+    image: node:20-alpine
+    working_dir: /app
+    volumes:
+      - ./:/app
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=mysql://root:example@db:3306/bsafe
+    command: sh -c "pnpm install --frozen-lockfile && pnpm build && pnpm start"
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+    networks:
+      - bsafe-net
+
+volumes:
+  db-data:
+
+networks:
+  bsafe-net:
+```
+
+Notes:
+- Use a multi-stage Dockerfile for production images (build then run from a slim Node image).
+- Replace plaintext secrets with a secrets manager or environment injection in orchestration.
+- Ensure your DB uses recommended production settings (innodb settings, backups, connection limits).
 
 ## Prerequisites
 
