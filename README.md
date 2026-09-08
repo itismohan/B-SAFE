@@ -2,27 +2,40 @@
 
 ![B-SAFE Logo](assets/bsafe-logo.png)
 
+
+<p><strong>B-SAFE</strong> — Blockchain Security, Assurance & Financial Engineering</p>
+
 </div>
 
-[![CI](https://github.com/itismohan/B-SAFE/actions/workflows/hardhat.yml/badge.svg)](https://github.com/itismohan/B-SAFE/actions/workflows/hardhat.yml) [![Release](https://img.shields.io/github/v/r[...]
+[![CI](https://github.com/itismohan/B-SAFE/actions/workflows/hardhat.yml/badge.svg)](https://github.com/itismohan/B-SAFE/actions/workflows/hardhat.yml) [![Release](https://img.shields.io/github/v/release/itismohan/B-SAFE?label=release)](https://github.com/itismohan/B-SAFE/releases) [![License: MIT](https://img.shields.io/github/license/itismohan/B-SAFE)](./LICENSE)
 
 # B-SAFE Blockchain Security Testing Framework
 
-B-SAFE is a security-first, blockchain-agnostic testing framework with a React control-plane dashboard, a TypeScript automation engine, controlled Hardhat/EVM fixtures, independent reconciliation,[...]
-
-The framework provides an independent assurance layer for digital-asset infrastructure. It exercises smart-contract and asset lifecycles, validates authorization and state transitions, compares on[...]
+B-SAFE is a security-first, blockchain-agnostic testing framework that provides a React control-plane dashboard, a TypeScript automation engine, controlled Hardhat/EVM fixtures, and independent reconciliation and evidence tooling. It provides an independent assurance layer for digital-asset infrastructure by exercising smart-contract and asset lifecycles, validating authorization and state transitions, comparing on-chain and off-chain state, and producing reproducible findings and evidence packages.
 
 ## What is included
 
-The repository contains the CAD-blueprint dashboard under `client/`, backend control-plane procedures under `server/`, blockchain adapters and domain models under `automation/src/`, Solidity fixtu[...]
+This repository contains the main components used to run B-SAFE end-to-end and in CI:
 
-The dashboard includes the Command Center, Test Runs, Test Engine, Findings, Reconciliation, and Evidence & Reports views. Test Runs supports persisted history, run details, execution progress, ca[...]
+- `client/` — CAD-blueprint React dashboard (control-plane UI)
+- `server/` — Backend control-plane services and tRPC procedures
+- `automation/src/` — Blockchain adapters, domain models, and TypeScript automation engine
+- `automation/tests/` — Unit, integration and EVM integration tests for the automation engine
+- `contracts/` or `solidity/` — Solidity fixtures and contracts used for controlled EVM tests
+- `drizzle/schema.ts` — Drizzle ORM schema definitions and migrations
+- `TESTING.md` — Detailed testing and CI guidance
 
-Read [TESTING.md](./TESTING.md) for the complete guide to service and tRPC tests, HTTP transport coverage, UI/browser tests, Hardhat contract integration tests, provider mocking, report evidence, [...]
+The dashboard includes the Command Center, Test Runs, Test Engine, Findings, Reconciliation, and Evidence & Reports views. Test Runs supports persisted history, run details, execution progress, cancellation, and artifact downloads. The automation engine supports callback-driven orchestration, cancellation, retry, and resumable stage execution.
+
+Read `TESTING.md` for the complete guide to service and tRPC tests, HTTP transport coverage, UI/browser tests, Hardhat contract integration tests, provider mocking, report evidence, and CI configuration.
 
 ## Prerequisites
 
-Install **Node.js 22 or newer**, **pnpm**, **Git**, and a MySQL/TiDB-compatible database. Playwright browser binaries are also required for browser tests.
+- Node.js 22 or newer
+- pnpm (package manager)
+- Git
+- A MySQL-compatible database (MySQL, MariaDB, TiDB)
+- Playwright browser binaries (for browser tests)
 
 Verify the basic tools:
 
@@ -34,28 +47,29 @@ git --version
 
 ## Install the project
 
-From the repository root:
+Clone the repository and install dependencies:
 
 ```bash
-cd /Users/mohankrishnagundala/Documents/BSAFE
+git clone https://github.com/itismohan/B-SAFE.git
+cd B-SAFE
 pnpm install
 ```
 
-If you cloned the repository somewhere else, use that directory instead. The project uses TypeScript, React, Vitest, Playwright, Hardhat, viem, Express, tRPC, Drizzle ORM, and MySQL/TiDB-compatibl[...]
+The project uses TypeScript, React, Vitest, Playwright, Hardhat, viem, Express, tRPC, Drizzle ORM, and a MySQL/TiDB-compatible database.
 
 ## Configure environment variables
 
-The full-stack dashboard expects a reachable database through `DATABASE_URL`. The managed B-SAFE environment injects authentication, OAuth, storage, and application variables automatically. A stan[...]
-
-If the repository includes an environment template, copy it without committing secrets:
+The full-stack dashboard requires a reachable database via `DATABASE_URL`. If available, copy the environment template and set the required variables locally (do not commit secrets):
 
 ```bash
 cp .env.example .env
 ```
 
-Then configure at least a valid local or hosted MySQL/TiDB-compatible `DATABASE_URL`. Do not commit `.env`, `.env.local`, or any credential file. If the dashboard starts but database-backed featur[...]
+At minimum, set a valid `DATABASE_URL` that points to a local or hosted MySQL/TiDB-compatible instance. Optionally configure authentication providers, OAuth credentials, object storage, and any application-specific variables required by your deployment. Do not commit `.env` or any secret files to the repository.
 
-## Start the B-SAFE dashboard
+If the dashboard starts but database-backed features fail, verify connectivity and credentials and inspect server logs for detailed errors.
+
+## Start the B-SAFE dashboard (development)
 
 Run the development server:
 
@@ -65,11 +79,11 @@ pnpm dev
 
 Open the dashboard at:
 
-```text
+```
 http://localhost:3000
 ```
 
-The dashboard provides the CAD-blueprint control plane, New Run flow, execution results, Test Runs history, Findings, Reconciliation, Evidence & Reports, and the real-time execution stream. Stop t[...]
+The dashboard provides the CAD-blueprint control plane, New Run flow, execution results, Test Runs history, Findings, Reconciliation, Evidence & Reports, and the real-time execution stream. Stop the server with Ctrl+C.
 
 ## Run the automation unit and service suites
 
@@ -107,36 +121,31 @@ Then run the browser suite:
 pnpm test:browser
 ```
 
-Browser coverage includes primary navigation, branding, the New Run launch flow, execution results, report-history filtering, pagination, artifact downloads, run-history controls, modal accessibi[...]
-
 To run a focused browser test:
 
 ```bash
 pnpm exec playwright test browser-tests/execution-cta.spec.ts
 ```
 
-## Run live Hardhat automation
+## Run live Hardhat automation (local EVM)
 
-Start the controlled local EVM node in Terminal 1:
+Start the controlled local EVM node in one terminal:
 
 ```bash
-cd /Users/mohankrishnagundala/Documents/BSAFE
 pnpm evm:node
 ```
 
-The node listens on `127.0.0.1:8545`. Leave this terminal running. In Terminal 2, run:
+The node listens on `127.0.0.1:8545`. Leave this terminal running. In a second terminal, run:
 
 ```bash
 pnpm test:evm
 ```
 
-For the preferred CI-equivalent no-skip validation, use:
+For CI-equivalent validation that fails on skipped scenarios, use:
 
 ```bash
 pnpm test:evm:ci
 ```
-
-The no-skip runner enables live EVM integration automatically and fails unless all five expected scenarios execute successfully with zero skipped scenarios. The live scenarios cover controlled EV[...]
 
 If you run live Vitest files manually, set the integration flag explicitly:
 
@@ -152,29 +161,32 @@ Generate HTML, JSON, JUnit, and SARIF evidence packages:
 pnpm evidence:generate
 ```
 
-Exercise the evidence ingestion and publication path:
+Ingest and publish evidence metadata and artifacts:
 
 ```bash
 pnpm evidence:ingest
 ```
 
-Evidence metadata can include the source, format, run ID, retention or expiration timestamps, artifact references, findings, and SARIF source locations. Review generated artifacts before committi[...]
+Evidence metadata may include the source, format, run ID, retention or expiration timestamps, artifact references, findings, and SARIF source locations. Review generated artifacts before committing or publishing evidence.
 
 ## Database schema changes
 
-The project uses Drizzle ORM. Schema changes must be intentional and reviewed. Update `drizzle/schema.ts`, generate the migration, inspect the SQL, and apply it through the project's database wor[...]
+The project uses Drizzle ORM. To make schema changes:
+
+1. Update `drizzle/schema.ts` with the new table/column definitions.
+2. Generate a migration and inspect the SQL:
 
 ```bash
 pnpm drizzle-kit generate
 ```
 
-The repository also exposes:
+3. Apply the migration or use `pnpm db:push` with care. Always ensure the target database is backed up or disposable before applying destructive changes.
 
 ```bash
 pnpm db:push
 ```
 
-Use database migration commands only when the schema change is understood and the target database is backed up or disposable. Do not use destructive SQL casually.
+Only run migration commands when the schema change is intentional and reviewed.
 
 ## Recommended validation sequences
 
@@ -246,7 +258,7 @@ git commit -m "Update B-SAFE framework"
 git push --set-upstream origin main
 ```
 
-If the repository has no commits yet, the first push will fail until `git add` and `git commit` are completed. Review `git status` before committing so that generated artifacts, local environment[...]
+If the repository has no commits yet, the first push will fail until `git add` and `git commit` are completed. Review `git status` before committing so that generated artifacts and local environment files are excluded as needed.
 
 ## License
 
@@ -254,7 +266,7 @@ This project is licensed under the MIT License. See the [LICENSE](./LICENSE) fil
 
 ## Further documentation
 
-- [TESTING.md](./TESTING.md) — detailed test architecture, test authoring, mocking, browser validation, Hardhat integration, CI, evidence, and troubleshooting
+- `TESTING.md` — detailed test architecture, test authoring, mocking, browser validation, Hardhat integration, CI, evidence, and troubleshooting
 - `.github/workflows/` — pull-request, Hardhat, nightly, evidence, and artifact-retention workflows
 - `automation/src/engine.ts` — callback-driven orchestration, cancellation, retry, and resumable stage execution
 - `server/dashboard.ts` — dashboard run lifecycle, persistence, history, and run-control behavior
