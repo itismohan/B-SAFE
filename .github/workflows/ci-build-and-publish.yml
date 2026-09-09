@@ -16,8 +16,10 @@ jobs:
           node-version: '24'
       - name: Enable corepack
         run: corepack enable
-      - name: Install pnpm
-        run: corepack install -g pnpm
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
       - name: Get pnpm store directory
         id: pnpm-cache
         run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
