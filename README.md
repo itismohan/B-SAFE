@@ -7,7 +7,7 @@
 
 </div>
 
-[![CI](https://github.com/itismohan/B-SAFE/actions/workflows/hardhat.yml/badge.svg)](https://github.com/itismohan/B-SAFE/actions/workflows/hardhat.yml) [![Release](https://img.shields.io/github/v/release/itismohan/B-SAFE?label=release)](https://github.com/itismohan/B-SAFE/releases) [![License: MIT](https://img.shields.io/github/license/itismohan/B-SAFE)](./LICENSE) [![Coverage](https://codecov.io/gh/itismohan/B-SAFE/branch/main/graph/badge.svg)](https://codecov.io/gh/itismohan/B-SAFE) [![Vulnerabilities](https://img.shields.io/github/vulnerabilities/itismohan/B-SAFE?label=vulnerabilities)](https://github.com/itismohan/B-SAFE/security) [![Dependabot](https://img.shields.io/github/dependabot/itismohan/B-SAFE?label=dependabot)](https://github.com/itismohan/B-SAFE/security/dependabot)
+[![CI](https://github.com/itismohan/B-SAFE/actions/workflows/hardhat.yml/badge.svg)](https://github.com/itismohan/B-SAFE/actions/workflows/hardhat.yml) [![Release](https://img.shields.io/github/v/release/itismohan/B-SAFE?label=release)](https://github.com/itismohan/B-SAFE/releases) [![License: MIT](https://img.shields.io/github/license/itismohan/B-SAFE)](./LICENSE)
 
 # B-SAFE Blockchain Security Testing Framework
 
